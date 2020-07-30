@@ -7,7 +7,7 @@ import fr.tde.usersservice.controllers.responses.UserResponse;
 import fr.tde.usersservice.mappers.UserMapper;
 import fr.tde.usersservice.models.User;
 import fr.tde.usersservice.services.UserService;
-import javassist.NotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @RequestMapping("/users")
+@Slf4j
 public class UserController {
 
     @Autowired
@@ -26,8 +27,15 @@ public class UserController {
     @PostMapping("/create")
     public UserResponse create(@RequestBody UserRequest userRequest) {
         User user = userMapper.convertToEntity(userRequest);
-        User userCreated = userService.upsertUser(user);
-        return userMapper.convertToDto(userCreated);
+        User userCreated = null;
+        try {
+            userCreated = userService.upsertUser(user);
+            return userMapper.convertToDto(userCreated);
+        } catch (CloneNotSupportedException e) {
+            log.error(e.getMessage(), e);
+            //TODO: Ajouter gestion de l'erreur avec code erreur 500
+            return null;
+        }
     }
 
     @GetMapping("/get")
@@ -35,8 +43,8 @@ public class UserController {
         UserResponse response = new UserResponse();
         try {
             response = userMapper.convertToDto(userService.getUserById(id));
-        } catch (NotFoundException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            log.error(e.getMessage(),e);
         }
         return response;
     }
@@ -46,15 +54,15 @@ public class UserController {
         UserResponse response = new UserResponse();
         try {
             response = userMapper.convertToDto(userService.getUserByUsernameAndPassword(username, password));
-        } catch (NotFoundException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
         }
         return response;
     }
 
 
     @PostMapping("/check")
-    public BooleanResponse checkUserByUsernameAndPassword(@RequestBody UserCheckRequest userCheckRequest) throws NotFoundException {
+    public BooleanResponse checkUserByUsernameAndPassword(@RequestBody UserCheckRequest userCheckRequest) throws Exception {
         BooleanResponse response = new BooleanResponse();
         User user = userService.getUserByUsernameAndPassword(userCheckRequest.getUsername(), userCheckRequest.getPassword());
         if(user != null && user.getId() != null && user.getId() != 0) {
@@ -64,5 +72,11 @@ public class UserController {
             response.setResponse(Boolean.FALSE);
         }
         return response;
+    }
+
+    @PostMapping("/username")
+    public UserResponse getUserByUsername(@RequestBody UserCheckRequest userCheckRequest) throws Exception {
+        User user = userService.getUserByUsername(userCheckRequest.getUsername());
+        return userMapper.convertToDto(user);
     }
 }
