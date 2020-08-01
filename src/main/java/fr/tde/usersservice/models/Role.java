@@ -1,10 +1,13 @@
 package fr.tde.usersservice.models;
 
+import lombok.Data;
+
 import javax.persistence.*;
 import java.util.Set;
 
 @Entity
 @Table(name = "roles")
+@Data
 public class Role {
 
     @Id
@@ -13,8 +16,5 @@ public class Role {
 
     @Column
     private String name;
-
-    @ManyToMany
-    private Set<User> users;
 
 }

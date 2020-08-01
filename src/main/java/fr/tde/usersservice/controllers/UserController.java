@@ -62,20 +62,12 @@ public class UserController {
 
 
     @PostMapping("/check")
-    public BooleanResponse checkUserByUsernameAndPassword(@RequestBody UserCheckRequest userCheckRequest) throws Exception {
-        BooleanResponse response = new BooleanResponse();
-        User user = userService.getUserByUsernameAndPassword(userCheckRequest.getUsername(), userCheckRequest.getPassword());
-        if(user != null && user.getId() != null && user.getId() != 0) {
-            response.setResponse(Boolean.TRUE);
-        }
-        else {
-            response.setResponse(Boolean.FALSE);
-        }
-        return response;
+    public BooleanResponse checkUserByUsernameAndPassword(@RequestBody UserCheckRequest userCheckRequest) {
+        return new BooleanResponse(userService.checkUser(userCheckRequest.getUsername(), userCheckRequest.getPassword()));
     }
 
     @PostMapping("/username")
-    public UserResponse getUserByUsername(@RequestBody UserCheckRequest userCheckRequest) throws Exception {
+    public UserResponse getUserByUsername(@RequestBody UserCheckRequest userCheckRequest) {
         User user = userService.getUserByUsername(userCheckRequest.getUsername());
         return userMapper.convertToDto(user);
     }

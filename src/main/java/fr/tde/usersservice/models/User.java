@@ -23,6 +23,6 @@ public class User {
     @Column
     private String email;
 
-    @ManyToMany
-    private Set<Role> roles;
+    @ManyToOne
+    private Role role;
 }
